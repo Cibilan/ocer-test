@@ -31,6 +31,82 @@ const decodeImage = imgPath => {
     return tf.node.decodeImage(arrByte);
 };
 
+function getWord(annotation, x1, y1, x2, y2) {
+    let text = "";
+    for (let pageIndex in annotation.pages) {
+        let page = annotation.pages[pageIndex];
+        for (let blockIndex in page.blocks) {
+            let block = page.blocks[blockIndex];
+            for (let paragraphIndex in block.paragraphs) {
+                let paragraph = block.paragraphs[paragraphIndex];
+                for (let wordIndex in paragraph.words) {
+                    let word = paragraph.words[wordIndex];
+                    for (let symbolIndex in word.symbols) {
+                        let symbol = word.symbols[symbolIndex];
+                        let min_x = Math.min(
+                            symbol.boundingBox.vertices[0].x,
+                            symbol.boundingBox.vertices[1].x,
+                            symbol.boundingBox.vertices[2].x,
+                            symbol.boundingBox.vertices[3].x,
+                        );
+                        let max_x = Math.max(
+                            symbol.boundingBox.vertices[0].x,
+                            symbol.boundingBox.vertices[1].x,
+                            symbol.boundingBox.vertices[2].x,
+                            symbol.boundingBox.vertices[3].x,
+                        );
+                        let min_y = Math.min(
+                            symbol.boundingBox.vertices[0].y,
+                            symbol.boundingBox.vertices[1].y,
+                            symbol.boundingBox.vertices[2].y,
+                            symbol.boundingBox.vertices[3].y,
+                        );
+                        let max_y = Math.max(
+                            symbol.boundingBox.vertices[0].y,
+                            symbol.boundingBox.vertices[1].y,
+                            symbol.boundingBox.vertices[2].y,
+                            symbol.boundingBox.vertices[3].y,
+                        );
+                        if (
+                            min_x >= x1 &&
+                            max_x <= x2 &&
+                            min_y >= y1 &&
+                            max_y <= y2
+                        ) {
+                            text += symbol.text;
+
+                            // if (symbol.property.detectedBreak != "undefined") {
+                            //     if (
+                            //         symbol.property.detectedBreak.type ==
+                            //             "SPACE" ||
+                            //         symbol.property.detectedBreak.type ==
+                            //             "EOL_SURE_SPACE"
+                            //     ) {
+                            //         text += " ";
+                            //     }
+
+                            //     if (
+                            //         symbol.property.detectedBreak.type ==
+                            //         "TAB"
+                            //     ) {
+                            //         text += "\t";
+                            //     }
+
+                            //     if (
+                            //         symbol.property.detectedBreak.type ==
+                            //         "LINE_BREAK"
+                            //     ) {
+                            //         text += "\n";
+                            //     }
+                            // }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return text;
+}
 
 
 app.use('/useAutoml', async (req, res) => {
@@ -38,7 +114,7 @@ app.use('/useAutoml', async (req, res) => {
     try {
        
         let modelUrl = "./model.json"
-        let imageUrl = "./myPan.jpg"
+        let imageUrl = "./pancard_sample.jpg"
 
         const re = await objectDetction(modelUrl)
     
@@ -71,11 +147,10 @@ app.use('/useAutoml', async (req, res) => {
           });
 
         const annotation = imageText.data.responses[0].fullTextAnnotation
-
-
-        //console.log(ir);
-
-        res.send('success');
+        
+       let name = getWord(annotation, 84, 506, 371, 563);
+        console.log(name);
+        res.send("success");
     } catch (error) {
         console.log(error);
         res.send('error');
