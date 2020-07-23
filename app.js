@@ -1,31 +1,25 @@
 
 const express = require('express')
 const fs = require('fs')
+const path = require('path')
 
-// const tf = require('@tensorflow/tfjs')
 const tf = require('@tensorflow/tfjs-node')
 const automl = require('@tensorflow/tfjs-automl')
 const axios =  require('axios');
 
 const app = express();
 
-const loadDictionary = modelUrl => {
-    const lastIndexOfSlash = modelUrl.lastIndexOf("/");
-    const prefixUrl = lastIndexOfSlash >= 0 ? modelUrl.slice(0,
-        lastIndexOfSlash + 1) : "";
-    const dictUrl = `${prefixUrl}dict.txt`;
-    const text = fs.readFileSync(dictUrl, { encoding: "utf-8" }); return text.trim().split("\n");
-};
+const ob = require('./objectDetect');
 
-const objectDetction = async modelUrl => {
+async function objectDetction (modelUrl) {
     const [model, dict] = await Promise.all([
         tf.loadGraphModel(`file://${modelUrl}`),
-        loadDictionary(modelUrl)
+        ob.loadDictionary(modelUrl)
     ]);
     return new automl.ObjectDetectionModel(model, dict);
 };
 
-const decodeImage = imgPath => {
+function decodeImage(imgPath) {
     const imgSrc = fs.readFileSync(imgPath);
     const arrByte = Uint8Array.from(Buffer.from(imgSrc));
     return tf.node.decodeImage(arrByte);
@@ -108,13 +102,35 @@ function getWord(annotation, x1, y1, x2, y2) {
     return text;
 }
 
+async function downloadImage () {  
+    const url = 'https://storage.googleapis.com/pancards/pancard_sample.jpg'
+    const pathurl = path.resolve(__dirname, 'images', 'sample.jpg')
+    const writer = fs.createWriteStream(pathurl)
+  
+    const response = await axios({
+      url,
+      method: 'GET',
+      responseType: 'stream'
+    })
+  
+    response.data.pipe(writer)
+  
+    return new Promise((resolve, reject) => {
+      writer.on('finish', resolve)
+      writer.on('error', reject)
+    })
+  }
 
 app.use('/useAutoml', async (req, res) => {
 
     try {
        
         let modelUrl = "./model.json"
-        let imageUrl = "./pancard_sample.jpg"
+
+        await downloadImage();
+
+        let imageUrl = "./images/sample.jpg"
+        
 
         const re = await objectDetction(modelUrl)
     
@@ -122,8 +138,8 @@ app.use('/useAutoml', async (req, res) => {
         const ir = await re.detect(image)
 
         const imageText = await axios({
-            url: 'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBOuePWkLQba4ruG1YppzWjdXZMJ8kC9Pk',
-            method: 'post',
+                url: 'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBOuePWkLQba4ruG1YppzWjdXZMJ8kC9Pk',
+                method: 'post',
             headers: {
                 Accept: 'application/json',
               'Content-Type': 'application/json'
@@ -138,7 +154,7 @@ app.use('/useAutoml', async (req, res) => {
                     ],
                     "image": {
                       "source": {
-                        "imageUri": "https://storage.googleapis.com/pancards/pancard_sample.webp"
+                        "imageUri": "https://storage.googleapis.com/pancards/pancard_sample.jpg"
                       }
                     }
                   }
@@ -146,6 +162,7 @@ app.use('/useAutoml', async (req, res) => {
               }
           });
 
+          
         const annotation = imageText.data.responses[0].fullTextAnnotation
         
        let name = getWord(annotation, 84, 506, 371, 563);

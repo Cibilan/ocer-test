@@ -10,13 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs": "^2.0.1",
     "@tensorflow/tfjs-automl": "^1.0.0",
     "@tensorflow/tfjs-node": "^2.0.1",
     "axios": "^0.19.2",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
-    "http": "0.0.1-security"
+    "http": "0.0.1-security",
+    "path": "^0.12.7"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
