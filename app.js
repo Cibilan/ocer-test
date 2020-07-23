@@ -5,12 +5,8 @@ const fs = require('fs')
 // const tf = require('@tensorflow/tfjs')
 const tf = require('@tensorflow/tfjs-node')
 const automl = require('@tensorflow/tfjs-automl')
+const axios =  require('axios');
 
-// const tf = require('./resources/js/tf.min.js')
-// const automl = require('./resources/js/tf-automl.min.js')
-
-// const modelUrl = require('./resources/model/model.json'); // URL to the model.json file.
-//const imageUrl = require('./resources/model/myPan.jpg');
 const app = express();
 
 const loadDictionary = modelUrl => {
@@ -21,41 +17,63 @@ const loadDictionary = modelUrl => {
     const text = fs.readFileSync(dictUrl, { encoding: "utf-8" }); return text.trim().split("\n");
 };
 
+const objectDetction = async modelUrl => {
+    const [model, dict] = await Promise.all([
+        tf.loadGraphModel(`file://${modelUrl}`),
+        loadDictionary(modelUrl)
+    ]);
+    return new automl.ObjectDetectionModel(model, dict);
+};
+
+const decodeImage = imgPath => {
+    const imgSrc = fs.readFileSync(imgPath);
+    const arrByte = Uint8Array.from(Buffer.from(imgSrc));
+    return tf.node.decodeImage(arrByte);
+};
+
 
 
 app.use('/useAutoml', async (req, res) => {
 
     try {
-        // console.log(modelUrl);
-        //console.log(__dirname + '/resources/model/model.json')
+       
         let modelUrl = "./model.json"
-        const [model, dict] = await Promise.all([tf.loadGraphModel(`file://${modelUrl}`),
-        loadDictionary(modelUrl)
-        ]);
-
-        const objectDetction = async modelUrl => {
-            const [model, dict] = await Promise.all([
-                tf.loadGraphModel(`file://${modelUrl}`),
-                loadDictionary(modelUrl)
-            ]);
-            return new automl.ObjectDetectionModel(model, dict);
-        };
+        let imageUrl = "./myPan.jpg"
 
         const re = await objectDetction(modelUrl)
-        const decodeImage = imgPath => {
-            const imgSrc = fs.readFileSync(imgPath);
-            const arrByte = Uint8Array.from(Buffer.from(imgSrc));
-            return tf.node.decodeImage(arrByte);
-        };
-        let image = await decodeImage('./myPan.jpg')
+    
+        let image = await decodeImage(imageUrl)
         const ir = await re.detect(image)
-        console.log(ir);
 
-        // const model = await automl.loadObjectDetection('model.json');
+        const imageText = await axios({
+            url: 'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBOuePWkLQba4ruG1YppzWjdXZMJ8kC9Pk',
+            method: 'post',
+            headers: {
+                Accept: 'application/json',
+              'Content-Type': 'application/json'
+            },
+            data:{
+                "requests": [
+                  {
+                    "features": [
+                      {
+                        "type": "DOCUMENT_TEXT_DETECTION"
+                      }
+                    ],
+                    "image": {
+                      "source": {
+                        "imageUri": "https://storage.googleapis.com/pancards/pancard_sample.webp"
+                      }
+                    }
+                  }
+                ]
+              }
+          });
 
-        //    const img = document.getElementById(imageUrl);
-        //     const options = {score: 0.5, iou: 0.5, topk: 20};
-        //     const predictions = await model.detect(img, options);
+        const annotation = imageText.data.responses[0].fullTextAnnotation
+
+
+        //console.log(ir);
 
         res.send('success');
     } catch (error) {
@@ -65,18 +83,10 @@ app.use('/useAutoml', async (req, res) => {
 
 })
 
-app.use('/useTfjsNode', async (req, res) => {
-
-
-
-})
-
-
-
-
 app.use((req, res, next) => {
     res.send("page not found");
 })
+
 
 
 
