@@ -27,6 +27,7 @@ exports.downloadImage = async(imageUrl) => {
     let y1 = top;
     let x2 = left + width;
     let y2 = top + height;
+
     for (let pageIndex in annotation.pages) {
         let page = annotation.pages[pageIndex];
         for (let blockIndex in page.blocks) {
@@ -69,30 +70,31 @@ exports.downloadImage = async(imageUrl) => {
                         ) {
                             text += symbol.text;
 
-                            // if (symbol.property.detectedBreak != "undefined") {
-                            //     if (
-                            //         symbol.property.detectedBreak.type ==
-                            //             "SPACE" ||
-                            //         symbol.property.detectedBreak.type ==
-                            //             "EOL_SURE_SPACE"
-                            //     ) {
-                            //         text += " ";
-                            //     }
+                            if (symbol.property && symbol.property.detectedBreak) {
+                                if (
+                                    symbol.property.detectedBreak.type ==
+                                        "SPACE" ||
+                                    symbol.property.detectedBreak.type ==
+                                        "EOL_SURE_SPACE"
+                                ) {
+                                    text += " ";
+                                }
 
-                            //     if (
-                            //         symbol.property.detectedBreak.type ==
-                            //         "TAB"
-                            //     ) {
-                            //         text += "\t";
-                            //     }
+                                if (
+                                    symbol.property.detectedBreak.type ==
+                                    "TAB"
+                                ) {
+                                    text += "\t";
+                                }
 
-                            //     if (
-                            //         symbol.property.detectedBreak.type ==
-                            //         "LINE_BREAK"
-                            //     ) {
-                            //         text += "\n";
-                            //     }
-                            // }
+                                if (
+                                    symbol.property.detectedBreak.type ==
+                                    "LINE_BREAK"
+                                ) {
+                                    //text += "\n";
+                                    text += ' '; // fix for pancard only
+                                }
+                            }
                         }
                     }
                 }
