@@ -11,25 +11,34 @@ app.use('/useAutoml', async (req, res) => {
 
     try {
 
+        //let imageUrl = req.imageUrl
+
         let imageUrl = "https://storage.googleapis.com/pancards/pancard_sample.jpg"
 
         await util.downloadImage(imageUrl);
 
         let downloadLocation = "./images/sample.jpg"
         
+        //use object model and object bounds
         const ir = await ob.getObjectBounds(downloadLocation);
 
-        console.log(ir);
-
+        //get ocr text
         const imageText = await vs.getDocumentText(imageUrl)
           
         const annotation = imageText.data.responses[0].fullTextAnnotation
         
-       let name = util.getTextFromBound(annotation, 84, 506, 278, 57);
-
+        // read PAN/ NAME etc from OCR data
+        ir.forEach(object => {
+            let x = object.box.left
+            let y = object.box.top
+            let width = object.box.width
+            let height = object.box.height
+            
+            let text = util.getTextFromBound(annotation, x, y, width, height);
+            console.log(object.label.replace('\r', ''), text);
+        });    
        
-        console.log(name);
-        res.send(name);
+        res.send("success");
         
     } catch (error) {
         console.log(error);

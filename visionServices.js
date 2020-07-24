@@ -6,7 +6,6 @@ exports.getDocumentText = async(imageUrl) =>{
         url: 'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyBOuePWkLQba4ruG1YppzWjdXZMJ8kC9Pk',
         method: 'post',
     headers: {
-        Accept: 'application/json',
       'Content-Type': 'application/json'
     },
     data:{
