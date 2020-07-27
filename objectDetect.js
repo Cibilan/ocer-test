@@ -30,7 +30,9 @@ function decodeImage(imgPath) {
 
 exports.getObjectBounds = async(imageUrl) =>{
 
-    let modelUrl = "./model.json"
+   // let modelUrl = "./automlModels/firstPanModel/model.json"
+   let modelUrl = "./automlModels/modelPanHorizontalVertical/model.json"
+
 
     const re = await objectDetction(modelUrl)
 

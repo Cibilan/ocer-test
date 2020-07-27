@@ -1,5 +1,6 @@
 
 const express = require('express')
+const jimp = require('jimp')
 
 const app = express();
 
@@ -11,9 +12,9 @@ app.use('/useAutoml', async (req, res) => {
 
     try {
 
-        //let imageUrl = req.imageUrl
+        let imageUrl = req.query.url;
 
-        let imageUrl = "https://storage.googleapis.com/pancards/pancard_sample.jpg"
+        //let imageUrl = "https://storage.googleapis.com/pancards/Deepak%20pal_PAN.jpg"
 
         await util.downloadImage(imageUrl);
 
@@ -45,6 +46,30 @@ app.use('/useAutoml', async (req, res) => {
         res.send('error');
     }
 
+})
+
+app.use('/jimp' , async (req,res) => {
+    let imageUrl = "https://storage.googleapis.com/pancards/pancard_sample_rotated.jpg"
+    try {
+    const imageData = await vs.getTextAndFace(imageUrl);
+
+    let faceAngel = imageData.data.responses[0].faceAnnotations[0].rollAngle;
+    
+    console.log(faceAngel);
+       
+    jimp.read(imageUrl)
+    .then(image => {
+        return image
+        .rotate(faceAngel)
+        .write('jimpOutput.jpg')
+    })
+
+    res.send('success');
+
+    } catch (error) {
+        console.log(error);
+        res.send('error');
+    }
 })
 
 app.use((req, res, next) => {
