@@ -77,11 +77,16 @@ app.use('/jimp' , async (req,res) => {
 app.use('/textAnalyser', async (req,res,next)=>{
 
     try{
-        let inputText = "hello how are you?";
+        let inputText = "hello how are you? I'm fine, good to see you. good";
 
         let tokenized = await ta.tokenizerv1(inputText);
 
+        // let tokenized2 = await ta.tokenizerv2(inputText);
+        // console.log(tokenized2);
+
         console.log(tokenized);
+
+        
 
         res.send('success');
 
