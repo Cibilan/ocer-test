@@ -24,6 +24,7 @@ exports.tokenizerv1 = async (text) =>{
         const tokenizer = new natural.WordTokenizer();
         const tokenizedReview = tokenizer.tokenize(stemmed);
 
+        // spell checker
         // tokenizedReview.forEach((word, index) => {
         //     tokenizedReview[index] = spellCorrector.correct(word);
         // })
@@ -38,6 +39,7 @@ exports.tokenizerv1 = async (text) =>{
     } 
 }
 
+// not completed
 exports.tokenizerv2 = async (text) =>{
     try{
         var my_corpus = new tm.Corpus([]);

@@ -77,7 +77,7 @@ app.use('/jimp' , async (req,res) => {
 app.use('/textAnalyser', async (req,res,next)=>{
 
     try{
-        let inputText = "hello how are you? I'm fine, good to see you. good";
+        let inputText = "hello how are you? Iam fine, good to see you. good";
 
         let tokenized = await ta.tokenizerv1(inputText);
 
