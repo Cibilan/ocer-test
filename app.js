@@ -7,6 +7,7 @@ const app = express();
 const ob = require('./objectDetect');
 const vs = require('./visionServices');
 const util = require('./util');
+const ta = require('./textAnalyser');
 
 app.use('/useAutoml', async (req, res) => {
 
@@ -70,6 +71,25 @@ app.use('/jimp' , async (req,res) => {
         console.log(error);
         res.send('error');
     }
+})
+
+
+app.use('/textAnalyser', async (req,res,next)=>{
+
+    try{
+        let inputText = "hello how are you?";
+
+        let tokenized = await ta.tokenizerv1(inputText);
+
+        console.log(tokenized);
+
+        res.send('success');
+
+    }catch (error) {
+        console.log(error);
+        res.send('error');
+    }
+
 })
 
 app.use((req, res, next) => {
