@@ -18,7 +18,7 @@
     "fs": "0.0.1-security",
     "http": "0.0.1-security",
     "jimp": "^0.14.0",
-    "natural": "^2.1.5",
+    "natural": "^2.4.5",
     "path": "^0.12.7",
     "spelling-corrector": "^3.0.0",
     "stopword": "^1.0.1",
